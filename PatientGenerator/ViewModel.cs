@@ -29,14 +29,16 @@ namespace PatientGenerator
         private void Initialize()
         {
             
-            GenderList = new List<string>()
+            GenderList = new List<AdministrativeGender>()
             {
-                AdministrativeGender.Male.ToString(), AdministrativeGender.Female.ToString(), AdministrativeGender.Other.ToString()
-                , AdministrativeGender.Unknown.ToString()
+                AdministrativeGender.Male, AdministrativeGender.Female, AdministrativeGender.Other
+                , AdministrativeGender.Unknown
             };
             ServerList = new List<string>()
             {
                 "http://localhost:8080/hapi-fhir-jpaserver-example/baseDstu3",
+                "https://myfhirserver.azurewebsites.net/",
+                "http://vonk.fire.ly/",
                 "http://fhir.healthintersections.com.au/open",
                 "http://spark.furore.com/fhir",
                 "https://his-medicomp-gateway.orionhealth.com/blaze/fhir/"
@@ -169,7 +171,7 @@ namespace PatientGenerator
             GivenName = "John";
             BirthDate = new DateTime(1925, 8, 27);
             MultipleBirth = false;
-            Gender = AdministrativeGender.Unknown;
+            Gender = AdministrativeGender.Male;
             Active = true;
             Deceased = false;
             MaritalState = MaritalStatusList.FirstOrDefault(x => x.Equals("married"));
@@ -195,7 +197,7 @@ namespace PatientGenerator
         }
 
         #region lookup tables
-        public List<string> GenderList
+        public List<AdministrativeGender> GenderList
         {
             get { return _genderList; }
             set
@@ -627,8 +629,8 @@ namespace PatientGenerator
                     Deceased = false;
                 }
 
-                Name = patient.Name.First().Family.First().ToString();
-                GivenName = patient.Name.First().Given.First();
+                Name = patient.Name[0].Family.ToString();
+                GivenName = patient.Name[0].GivenElement[0].ToString();
 
                 if (patient.BirthDate != null) BirthDate = DateTime.Parse(patient.BirthDate);
 
@@ -647,20 +649,27 @@ namespace PatientGenerator
                 //
                 // TODO
                 // 
-                Gender = AdministrativeGender.Unknown;
+                Gender = patient.Gender ?? AdministrativeGender.Unknown;
+                CPR = patient.Identifier[0].Value.ToString();
+                Triage = patient.GetStringExtension("http://www.example.com/triagetest") ?? "Unknown";
+                Specialty = patient.GetStringExtension("http://www.example.com/SpecialtyTest") ?? "Unknown";
+                HospitalName = patient.GetStringExtension("http://www.example.com/hospitalTest") ?? "To hospital went wrong";
+                ETA = Convert.ToDateTime(patient.GetExtension("http://www.example.com/datetimeTest").Value.ToString());
+
                 MaritalState = MaritalStatusList.FirstOrDefault(x => x.Equals("unknown"));
                 Nationality = NationalityList.First(x => x.Equals("Other"));
 
-                Address1 = "";
-                Address2 = "";
-                Zip = "";
-                City = "";
-                State = "";
-                Country = "";
+               if(patient.Address[0] != null) Address1 = patient.Address[0].LineElement[0].ToString();
+                if (patient.Address[0].LineElement[1] != null) Address2 = patient.Address[0].LineElement[1].ToString();
 
-                Phone = "";
-                Mobile = "";
-                Email = "";
+                if (patient.Address[0].PostalCode != null) Zip = patient.Address[0].PostalCode;
+                if (patient.Address[0].City != null) City = patient.Address[0].City;
+                if (patient.Address[0].State != null) State = patient.Address[0].State;
+                if (patient.Address[0].Country != null) Country = patient.Address[0].Country;
+
+                if (patient.Telecom[0] != null) Phone = patient.Telecom[0].Value;
+                if (patient.Telecom[1] != null) Mobile = patient.Telecom[1].Value;
+                if (patient.Telecom[2] != null) Email = patient.Telecom[2].Value;
 
                 Photo = null;
 
@@ -684,11 +693,11 @@ namespace PatientGenerator
             if (result != null && result == true)
             {
                 Photo = dialog.FileName;
-                SendImage = true;
+                //SendImage = true;
             }
             else
             {
-                Photo = "unkown-female.jpg";
+                //Photo = "unkown-female.jpg";
             }
         }
 
@@ -721,13 +730,13 @@ namespace PatientGenerator
 
         private void ExecuteResetData(object obj)
         {
-            SendImage = false;
+            //SendImage = false;
             NewPatient();
         }
 
         private void ExecuteDefaultData(object obj)
         {
-            SendImage = true;
+            //SendImage = true;
             PopulateWithDefaultData();
         }
 
@@ -741,16 +750,15 @@ namespace PatientGenerator
             {
                 var uri = new Uri(_url);
                 var client = new FhirClient(uri);
-
+                
                 var p = new Patient();
                 p.Active = this.Active;
 
                 if (!insert && _entry != null)
                 {
-                    var i = new ResourceIdentity(_entry.Id);
-                    p.Id = i.Id;
+                    p.Id = _entry.Id;
+                    //p.Id = i;
                 }
-
                 String dob = BirthDate.Value.ToString("s");
 
                 p.BirthDate = dob;
@@ -786,12 +794,16 @@ namespace PatientGenerator
                 }
 
                 p.Telecom = new List<ContactPoint>(3);
-
+                p.FhirCommentsElement.Add(new FhirString("TEST AmbulanceNote"));
+                var t = new ContactPoint();
+                t.System = ContactPoint.ContactPointSystem.Phone;
+                
                 p.Telecom.Add(new ContactPoint()
                 {
                     Value = Mobile,
                     System = ContactPoint.ContactPointSystem.Phone,
                     Use = ContactPoint.ContactPointUse.Mobile
+                    
                 });
 
                 p.Telecom.Add(new ContactPoint()
@@ -816,12 +828,13 @@ namespace PatientGenerator
 
                 p.Extension = new List<Extension>();
                 //p.Extension.Add(new Extension(new Uri("http://www.englishclub.com/vocabulary/world-countries-nationality.htm"), new FhirString(Nationality)));
-                
-                p.Extension.Add(new Extension("http://www.example.com/hospitalTest", new FhirString(HospitalName)));
+                var ToHospitalName = new Extension("http://www.example.com/hospitalTest", new FhirString(HospitalName));
+                p.Extension.Add(ToHospitalName);
                 p.Extension.Add(new Extension("http://www.example.com/triagetest", new FhirString(Triage)));
                 p.Extension.Add(new Extension("http://www.example.com/SpecialtyTest", new FhirString(Specialty)));
                 p.Extension.Add(new Extension("http://www.example.com/datetimeTest", new FhirDateTime(ETA)));
 
+                
                 //p.Identifier.Add(CPR);
 
                 p.Identifier = new List<Identifier>(1);
@@ -848,6 +861,7 @@ namespace PatientGenerator
 
                 if (insert)
                 {
+                    client.PreferredFormat = ResourceFormat.Xml;
                     _entry = client.Create(p);
                 }
                 else
@@ -887,7 +901,7 @@ namespace PatientGenerator
 
 
         private List<String> _maritalStatusList;
-        private List<String> _genderList;
+        private List<AdministrativeGender> _genderList;
         private bool _sendImage;
 
         private String _status;
