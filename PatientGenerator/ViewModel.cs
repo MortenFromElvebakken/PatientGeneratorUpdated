@@ -829,7 +829,7 @@ namespace PatientGenerator
                 p.Extension = new List<Extension>();
                 //p.Extension.Add(new Extension(new Uri("http://www.englishclub.com/vocabulary/world-countries-nationality.htm"), new FhirString(Nationality)));
                 var ToHospitalName = new Extension("http://www.example.com/hospitalTest", new FhirString(HospitalName));
-                p.Extension.Add(ToHospitalName);
+                //p.Extension.Add(ToHospitalName);
                 p.Extension.Add(new Extension("http://www.example.com/triagetest", new FhirString(Triage)));
                 p.Extension.Add(new Extension("http://www.example.com/SpecialtyTest", new FhirString(Specialty)));
                 p.Extension.Add(new Extension("http://www.example.com/datetimeTest", new FhirDateTime(ETA)));
@@ -837,13 +837,20 @@ namespace PatientGenerator
                 
                 //p.Identifier.Add(CPR);
 
-                p.Identifier = new List<Identifier>(1);
+                p.Identifier = new List<Identifier>(2);
                 var cprIdentifier = new Identifier();
                 cprIdentifier.Value = CPR;
+                cprIdentifier.Use = Identifier.IdentifierUse.Official;
+                cprIdentifier.System = "CPR";
                 //cprIdentifier.Id = CPR;
 
                 p.Identifier.Add(cprIdentifier);
-
+                var toHospitalIdentifier = new Identifier();
+                toHospitalIdentifier.Value = HospitalName;
+                toHospitalIdentifier.Use = Identifier.IdentifierUse.Temp;
+                toHospitalIdentifier.System = "ToHospital";
+                toHospitalIdentifier.SystemElement = new FhirUri("http://www.example.com/hospitalTest");
+                p.Identifier.Add(toHospitalIdentifier);
 
 
                 p.Address = new List<Address>(1);
@@ -857,7 +864,7 @@ namespace PatientGenerator
                 if (!String.IsNullOrEmpty(Address2)) lines.Add(Address2);
                 a.Line = lines;
                 p.Address.Add(a);
-
+                
 
                 if (insert)
                 {
@@ -872,7 +879,7 @@ namespace PatientGenerator
 
                 var identity = new ResourceIdentity(_entry.Id);
                 PatientId = identity.Id;
-
+                
                 Status = "Created new patient: " + PatientId;
                 Debug.WriteLine(Status);
 
