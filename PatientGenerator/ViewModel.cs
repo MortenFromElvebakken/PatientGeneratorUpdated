@@ -49,7 +49,8 @@ namespace PatientGenerator
                 "TriageOrange",
                 "TriageYellow",
                 "TriageBlue",
-                "TriageGreen"
+                "TriageGreen",
+                "anyUnknownString"
             };
             SpecialtyList = new List<string>()
             {
@@ -154,6 +155,7 @@ namespace PatientGenerator
             State = "";
             Country = "";
             CPR = "";
+            FromDestination = "";
 
 
             Phone = "";
@@ -162,6 +164,7 @@ namespace PatientGenerator
 
             Photo = "unknown-male.jpg";
         }
+        
 
         private void PopulateWithDefaultData()
         {
@@ -182,10 +185,10 @@ namespace PatientGenerator
             Address1 = "Nørre Alle";
             Address2 = "12";
             Triage = "TriageRed";
+            Specialty = "Unknown";
             HospitalName = "AUH";
-            Specialty = "Ortho";
             CPR = "1212121212";
-
+            FromDestination = "Grenåvej";
             Zip = "8000";
             City = "Aarhus";
             State = "Midtjylland";
@@ -465,6 +468,17 @@ namespace PatientGenerator
                 OnPropertyChanged();
             }
         }
+
+        public string FromDestination
+        {
+            get { return _fromDestination; }
+            set
+            {
+                if (value == _fromDestination) return;
+                _fromDestination = value;
+                OnPropertyChanged();
+            }
+        }
         public string Address1
         {
             get { return _address1; }
@@ -653,7 +667,9 @@ namespace PatientGenerator
                 CPR = patient.Identifier[0].Value.ToString();
                 Triage = patient.GetStringExtension("http://www.example.com/triagetest") ?? "Unknown";
                 Specialty = patient.GetStringExtension("http://www.example.com/SpecialtyTest") ?? "Unknown";
-                HospitalName = patient.GetStringExtension("http://www.example.com/hospitalTest") ?? "To hospital went wrong";
+                HospitalName = patient.Identifier[1].Value ?? "Unknown"; //patient.GetStringExtension("http://www.example.com/hospitalTest") ?? "To hospital went wrong";
+                FromDestination = patient.Identifier[2].Value ?? "Unknown";
+                //Tjek op på at den er i Identity
                 ETA = Convert.ToDateTime(patient.GetExtension("http://www.example.com/datetimeTest").Value.ToString());
 
                 MaritalState = MaritalStatusList.FirstOrDefault(x => x.Equals("unknown"));
@@ -828,7 +844,7 @@ namespace PatientGenerator
 
                 p.Extension = new List<Extension>();
                 //p.Extension.Add(new Extension(new Uri("http://www.englishclub.com/vocabulary/world-countries-nationality.htm"), new FhirString(Nationality)));
-                var ToHospitalName = new Extension("http://www.example.com/hospitalTest", new FhirString(HospitalName));
+                //var ToHospitalName = new Extension("http://www.example.com/hospitalTest", new FhirString(HospitalName));
                 //p.Extension.Add(ToHospitalName);
                 p.Extension.Add(new Extension("http://www.example.com/triagetest", new FhirString(Triage)));
                 p.Extension.Add(new Extension("http://www.example.com/SpecialtyTest", new FhirString(Specialty)));
@@ -852,6 +868,13 @@ namespace PatientGenerator
                 toHospitalIdentifier.SystemElement = new FhirUri("http://www.example.com/hospitalTest");
                 p.Identifier.Add(toHospitalIdentifier);
 
+
+                var fromDestinationIdentifier = new Identifier();
+                fromDestinationIdentifier.Value = FromDestination;
+                fromDestinationIdentifier.Use = Identifier.IdentifierUse.Temp;
+                fromDestinationIdentifier.System = "FromDestination";
+                fromDestinationIdentifier.SystemElement = new FhirUri("http://www.example.com/fromdestination");
+                p.Identifier.Add(fromDestinationIdentifier);
 
                 p.Address = new List<Address>(1);
                 var a = new Address();
@@ -905,6 +928,7 @@ namespace PatientGenerator
         private List<String> _specialtyList;
         private List<String> _hospitalList;
         private string _cpr;
+        private string _fromDestination;
 
 
         private List<String> _maritalStatusList;
