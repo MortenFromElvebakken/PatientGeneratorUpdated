@@ -48,8 +48,8 @@ namespace PatientGenerator
                 "TriageRed",
                 "TriageOrange",
                 "TriageYellow",
-                "TriageBlue",
                 "TriageGreen",
+                "TriageBlue",
                 "anyUnknownString"
             };
             SpecialtyList = new List<string>()
