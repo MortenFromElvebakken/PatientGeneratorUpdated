@@ -129,6 +129,7 @@ namespace PatientGenerator
             };
 
             Url = ServerList.First();
+            UpdateButtonEnabled = true;
         }
 
         private void NewPatient()
@@ -311,6 +312,17 @@ namespace PatientGenerator
             {
                 if (value.Equals(_sendImage)) return;
                 _sendImage = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool UpdateButtonEnabled
+        {
+            get { return _updateButtonEnabled; }
+            set
+            {
+                if (value.Equals(_updateButtonEnabled)) return;
+                _updateButtonEnabled = value;
                 OnPropertyChanged();
             }
         }
@@ -627,8 +639,11 @@ namespace PatientGenerator
 
                 _entry = entry;
 
-                var identity = new ResourceIdentity(_entry.Id);
-                PatientId = identity.Id;
+                //var identity = new ResourceIdentity(_entry.Id);
+                //PatientId = identity.Id;
+
+                var identity = _entry.Id;
+                PatientId = identity;
 
                 var patient = _entry;
 
@@ -668,7 +683,14 @@ namespace PatientGenerator
                 Triage = patient.GetStringExtension("http://www.example.com/triagetest") ?? "Unknown";
                 Specialty = patient.GetStringExtension("http://www.example.com/SpecialtyTest") ?? "Unknown";
                 HospitalName = patient.Identifier[1].Value ?? "Unknown"; //patient.GetStringExtension("http://www.example.com/hospitalTest") ?? "To hospital went wrong";
-                FromDestination = patient.Identifier[2].Value ?? "Unknown";
+                if (patient.Identifier.Count > 2)
+                {
+                    FromDestination = patient.Identifier[2]?.Value ?? "Unknown";
+                }
+                else
+                {
+                    FromDestination = "Unknown";}
+
                 //Tjek op på at den er i Identity
                 ETA = Convert.ToDateTime(patient.GetExtension("http://www.example.com/datetimeTest").Value.ToString());
 
@@ -760,6 +782,7 @@ namespace PatientGenerator
         private void InsertOrUpdatePatient(bool insert = true)
         {
             // Call into the model an pass the patient data
+            UpdateButtonEnabled = false;
             ChangeBusyState(true);
 
             try
@@ -900,9 +923,12 @@ namespace PatientGenerator
                     _entry = client.Update(_entry, true);
                 }
 
-                var identity = new ResourceIdentity(_entry.Id);
-                PatientId = identity.Id;
-                
+                //var identity = new ResourceIdentity(_entry.Id);
+                //PatientId = identity.Id;
+
+                var identity = _entry.Id;
+                PatientId = identity;
+
                 Status = "Created new patient: " + PatientId;
                 Debug.WriteLine(Status);
 
@@ -915,6 +941,7 @@ namespace PatientGenerator
             }
             finally
             {
+                UpdateButtonEnabled = true;
                 ChangeBusyState(false);
             }
         }
@@ -934,6 +961,7 @@ namespace PatientGenerator
         private List<String> _maritalStatusList;
         private List<AdministrativeGender> _genderList;
         private bool _sendImage;
+        private bool _updateButtonEnabled;
 
         private String _status;
         private bool _busy;
