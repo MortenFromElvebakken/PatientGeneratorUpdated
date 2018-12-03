@@ -41,7 +41,9 @@ namespace PatientGenerator
                 "http://vonk.fire.ly/",
                 "http://fhir.healthintersections.com.au/open",
                 "http://spark.furore.com/fhir",
-                "https://his-medicomp-gateway.orionhealth.com/blaze/fhir/"
+                "https://his-medicomp-gateway.orionhealth.com/blaze/fhir/",
+                "http://10.1.132.65:8080/hapi-fhir-jpaserver-exampleNEW/baseDstu3",
+                "http://10.1.132.43:8080/hapi-fhir-jpaserver-exampleNEW/baseDstu3"
             };
             TriageList = new List<string>()
             {
