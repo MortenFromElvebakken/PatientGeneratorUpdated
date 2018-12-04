@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
@@ -37,11 +38,13 @@ namespace PatientGenerator
             ServerList = new List<string>()
             {
                 "http://localhost:8080/hapi-fhir-jpaserver-example/baseDstu3",
+                "http://10.192.154.107:8080/hapi-fhir-jpaserver-example/baseDstu3",
                 "https://myfhirserver.azurewebsites.net/",
                 "http://vonk.fire.ly/",
                 "http://fhir.healthintersections.com.au/open",
                 "http://spark.furore.com/fhir",
-                "https://his-medicomp-gateway.orionhealth.com/blaze/fhir/"
+                "https://his-medicomp-gateway.orionhealth.com/blaze/fhir/",
+                "http://hapi.fhir.org/baseDstu3"
             };
             TriageList = new List<string>()
             {
@@ -147,7 +150,7 @@ namespace PatientGenerator
             Gender = AdministrativeGender.Unknown;
             MaritalState = MaritalStatusList.FirstOrDefault(x => x.Equals("unknown"));
             Nationality = NationalityList.First(x => x.Equals("Other"));
-
+            
             Address1 = "";
             Address2 = "";
             Zip = "";
@@ -156,6 +159,7 @@ namespace PatientGenerator
             Country = "";
             CPR = "";
             FromDestination = "";
+            AgeOfPatient = "";
 
 
             Phone = "";
@@ -189,6 +193,7 @@ namespace PatientGenerator
             HospitalName = "AUH";
             CPR = "1212121212";
             FromDestination = "Grenåvej";
+            AgeOfPatient = "40";
             Zip = "8000";
             City = "Aarhus";
             State = "Midtjylland";
@@ -469,6 +474,17 @@ namespace PatientGenerator
             }
         }
 
+        public string AgeOfPatient
+        {
+            get { return _ageOfPatient; }
+            set
+            {
+                if (value == _ageOfPatient) return;
+                _ageOfPatient = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string FromDestination
         {
             get { return _fromDestination; }
@@ -669,6 +685,7 @@ namespace PatientGenerator
                 Specialty = patient.GetStringExtension("http://www.example.com/SpecialtyTest") ?? "Unknown";
                 HospitalName = patient.Identifier[1].Value ?? "Unknown"; //patient.GetStringExtension("http://www.example.com/hospitalTest") ?? "To hospital went wrong";
                 FromDestination = patient.Identifier[2].Value ?? "Unknown";
+                //AgeOfPatient = patient.
                 //Tjek op på at den er i Identity
                 ETA = Convert.ToDateTime(patient.GetExtension("http://www.example.com/datetimeTest").Value.ToString());
 
@@ -902,7 +919,7 @@ namespace PatientGenerator
 
                 var identity = new ResourceIdentity(_entry.Id);
                 PatientId = identity.Id;
-                
+                MessageBox.Show("Patient updated/created");
                 Status = "Created new patient: " + PatientId;
                 Debug.WriteLine(Status);
 
@@ -966,6 +983,8 @@ namespace PatientGenerator
         private String _phone;
         private String _mobile;
         private String _email;
+        private string _ageOfPatient;
+
         #endregion
     }
 }
