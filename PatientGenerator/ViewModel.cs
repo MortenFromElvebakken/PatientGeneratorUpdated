@@ -12,6 +12,13 @@ using Hl7.Fhir.Rest;
 using Microsoft.Win32;
 using PatientGenerator.Annotations;
 
+// **********************************
+// Group: 2018E73
+// Anni Lykke Wilhelmsen, 201509504
+// Morten From Elvebakken, 201509095
+// **********************************
+
+
 namespace PatientGenerator
 {
     internal class ViewModel : INotifyPropertyChanged
@@ -658,7 +665,7 @@ namespace PatientGenerator
                 {
                     Deceased = false;
                 }
-
+                
                 Name = patient.Name[0].Family.ToString();
                 GivenName = patient.Name[0].GivenElement[0].ToString();
 
@@ -692,19 +699,19 @@ namespace PatientGenerator
                 MaritalState = MaritalStatusList.FirstOrDefault(x => x.Equals("unknown"));
                 Nationality = NationalityList.First(x => x.Equals("Other"));
 
-               if(patient.Address[0] != null) Address1 = patient.Address[0].LineElement[0].ToString();
-                if (patient.Address[0].LineElement[1] != null) Address2 = patient.Address[0].LineElement[1].ToString();
+               //if(patient.Address[0] != null) Address1 = patient.Address[0].LineElement[0].ToString();
+               // if (patient.Address[0].LineElement[1] != null) Address2 = patient.Address[0].LineElement[1].ToString();
 
-                if (patient.Address[0].PostalCode != null) Zip = patient.Address[0].PostalCode;
-                if (patient.Address[0].City != null) City = patient.Address[0].City;
-                if (patient.Address[0].State != null) State = patient.Address[0].State;
-                if (patient.Address[0].Country != null) Country = patient.Address[0].Country;
+               // if (patient.Address[0].PostalCode != null) Zip = patient.Address[0].PostalCode;
+               // if (patient.Address[0].City != null) City = patient.Address[0].City;
+               // if (patient.Address[0].State != null) State = patient.Address[0].State;
+               // if (patient.Address[0].Country != null) Country = patient.Address[0].Country;
 
-                if (patient.Telecom[0] != null) Phone = patient.Telecom[0].Value;
-                if (patient.Telecom[1] != null) Mobile = patient.Telecom[1].Value;
-                if (patient.Telecom[2] != null) Email = patient.Telecom[2].Value;
+               // if (patient.Telecom[0] != null) Phone = patient.Telecom[0].Value;
+               // if (patient.Telecom[1] != null) Mobile = patient.Telecom[1].Value;
+               // if (patient.Telecom[2] != null) Email = patient.Telecom[2].Value;
 
-                Photo = null;
+               // Photo = null;
 
             }
             catch (Exception)
