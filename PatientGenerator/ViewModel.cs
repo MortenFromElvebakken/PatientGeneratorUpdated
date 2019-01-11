@@ -51,15 +51,16 @@ namespace PatientGenerator
                 "http://fhir.healthintersections.com.au/open",
                 "http://spark.furore.com/fhir",
                 "https://his-medicomp-gateway.orionhealth.com/blaze/fhir/",
-                "http://hapi.fhir.org/baseDstu3"
+                "http://10.1.132.65:8080/hapi-fhir-jpaserver-exampleNEW/baseDstu3",
+                "http://10.1.132.43:8080/hapi-fhir-jpaserver-exampleNEW/baseDstu3"
             };
             TriageList = new List<string>()
             {
                 "TriageRed",
                 "TriageOrange",
                 "TriageYellow",
-                "TriageBlue",
                 "TriageGreen",
+                "TriageBlue",
                 "anyUnknownString"
             };
             SpecialtyList = new List<string>()
@@ -139,6 +140,7 @@ namespace PatientGenerator
             };
 
             Url = ServerList.First();
+            UpdateButtonEnabled = true;
         }
 
         private void NewPatient()
@@ -323,6 +325,17 @@ namespace PatientGenerator
             {
                 if (value.Equals(_sendImage)) return;
                 _sendImage = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool UpdateButtonEnabled
+        {
+            get { return _updateButtonEnabled; }
+            set
+            {
+                if (value.Equals(_updateButtonEnabled)) return;
+                _updateButtonEnabled = value;
                 OnPropertyChanged();
             }
         }
@@ -650,8 +663,11 @@ namespace PatientGenerator
 
                 _entry = entry;
 
-                var identity = new ResourceIdentity(_entry.Id);
-                PatientId = identity.Id;
+                //var identity = new ResourceIdentity(_entry.Id);
+                //PatientId = identity.Id;
+
+                var identity = _entry.Id;
+                PatientId = identity;
 
                 var patient = _entry;
 
@@ -784,6 +800,7 @@ namespace PatientGenerator
         private void InsertOrUpdatePatient(bool insert = true)
         {
             // Call into the model an pass the patient data
+            UpdateButtonEnabled = false;
             ChangeBusyState(true);
 
             try
@@ -939,6 +956,7 @@ namespace PatientGenerator
             }
             finally
             {
+                UpdateButtonEnabled = true;
                 ChangeBusyState(false);
             }
         }
@@ -958,6 +976,7 @@ namespace PatientGenerator
         private List<String> _maritalStatusList;
         private List<AdministrativeGender> _genderList;
         private bool _sendImage;
+        private bool _updateButtonEnabled;
 
         private String _status;
         private bool _busy;

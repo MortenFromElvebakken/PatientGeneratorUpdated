@@ -134,7 +134,7 @@
             <Button Height="24" Margin="0,30,0,0" Content="Default Patient Data" Command="{Binding DefaultDataCommand, Mode=OneWay, NotifyOnTargetUpdated=True, Source={StaticResource VM}}" />
             <Button Height="24" Margin="0,5,0,0" Content="Reset Patient Data" Command="{Binding ResetDataCommand, Source={StaticResource VM}}" />
 
-            <Button Height="24" Margin="0,20,0,0" Command="{Binding Path=UpdatePatientCommand, Source={StaticResource VM}}" >Update Patient Data</Button>
+            <Button Height="24" Margin="0,20,0,0" Command="{Binding Path=UpdatePatientCommand, Source={StaticResource VM}}" IsEnabled="{Binding Path=UpdateButtonEnabled, Source={StaticResource VM}}" >Update Patient Data</Button>
             <Button Height="24" Margin="0,5,-0.2,0" Command="{Binding CreatePatientCommand, Source={StaticResource VM}}" Content="Create New Patient" />
 
         </StackPanel>
